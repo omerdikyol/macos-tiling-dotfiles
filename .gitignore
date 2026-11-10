@@ -1,0 +1,5 @@
+.DS_Store
+*.bak
+*.corrupt
+sketchybar/bin/clipwatch
+karabiner/bin/capskey

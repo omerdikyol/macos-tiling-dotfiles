@@ -1,0 +1,17 @@
+#!/bin/bash
+# bar-timer 25m | 90s | 1h30m   start a countdown
+# bar-timer sw                  start a stopwatch
+# bar-timer pause|resume|stop   control the running one
+# State file: MODE START DURATION PAUSED_AT   (epoch seconds; PAUSED_AT 0 = running)
+ST=/tmp/sketchybar-timer.state
+now=$(date +%s)
+parse() { local s=0 t=$1; [[ $t =~ ([0-9]+)h ]] && s=$((s + BASH_REMATCH[1] * 3600)); [[ $t =~ ([0-9]+)m ]] && s=$((s + BASH_REMATCH[1] * 60)); [[ $t =~ ([0-9]+)s ]] && s=$((s + BASH_REMATCH[1])); [[ $t =~ ^[0-9]+$ ]] && s=$((t * 60)); echo $s; }
+case "$1" in
+  sw) echo "sw $now 0 0" > $ST ;;
+  stop) rm -f $ST ;;
+  pause)  read -r M S D P < $ST 2>/dev/null && [ "$P" = 0 ] && echo "$M $S $D $now" > $ST ;;
+  resume) read -r M S D P < $ST 2>/dev/null && [ "$P" != 0 ] && echo "$M $((S + now - P)) $D 0" > $ST ;;
+  "") echo "usage: bar-timer 25m | sw | pause | resume | stop"; exit 1 ;;
+  *) secs=$(parse "$1"); [ "$secs" -gt 0 ] || { echo "bad duration: $1"; exit 1; }; echo "timer $now $secs 0" > $ST ;;
+esac
+sketchybar --trigger timer_change 2>/dev/null

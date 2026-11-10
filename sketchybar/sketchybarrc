@@ -1,0 +1,159 @@
+#!/bin/bash
+# Tokyo Night bar for OmniWM. Look adapted from Pe8er/dotfiles (MIT).
+source "$CONFIG_DIR/globalstyles.sh"
+PLUGIN_DIR="$CONFIG_DIR/plugins"
+
+sketchybar --bar "${bar[@]}" --default "${item_defaults[@]}"
+sketchybar --add event omniwm_change
+
+# Workspaces: icon + highlight colour per workspace
+WS=(
+  ":cyan"
+  "󰇧:blue"
+  "󰅨:green"
+  "󰍩:orange"
+  "󰒓:yellow"
+  "󰉋:purple"
+  "󰧮:red"
+  "󰎆:maroon"
+  "󰣆:teal"
+)
+for i in "${!WS[@]}"; do
+  sid=$((i + 1)); icon="${WS[i]%%:*}"; color="$(getcolor "${WS[i]##*:}")"
+  sketchybar --add item space.$sid left \
+    --set space.$sid icon="$icon" icon.highlight_color=$color label.drawing=off \
+      icon.padding_left=8 icon.padding_right=8 label.padding_left=0 \
+      background.drawing=off drawing=off updates=on \
+      click_script="omniwmctl command switch-workspace $sid" \
+      script="$PLUGIN_DIR/omniwm.sh $sid $color" \
+    --subscribe space.$sid omniwm_change front_app_switched
+done
+sketchybar --add bracket left.side '/space\..*/' --set left.side "${bracket_defaults[@]}"
+
+# Now playing (system-wide, via nowplaying-cli). Click toggles play/pause.
+sketchybar --add item music left \
+  --set music update_freq=3 updates=on drawing=off icon="󰎆" icon.color=$(getcolor maroon) \
+    label.max_chars=36 scroll_texts=off label.scroll_duration=150 \
+    script="$PLUGIN_DIR/music.sh" click_script="nowplaying-cli togglePlayPause" \
+  --subscribe music mouse.entered mouse.exited \
+  --add bracket media music --set media "${bracket_defaults[@]}"
+
+# Notifications mirrored from Notification Center (replaces Vorssaint's island for this)
+sketchybar --add event notification
+sketchybar --add item notif left \
+  --set notif update_freq=1 updates=on drawing=off icon="󰂜" label.max_chars=60 scroll_texts=on \
+    script="$PLUGIN_DIR/notif.sh" click_script="sketchybar --set notif drawing=off" \
+  --subscribe notif notification \
+  --add bracket notifbox notif --set notifbox "${bracket_defaults[@]}"
+rm -f /tmp/sketchybar-notif.unread /tmp/sketchybar-notif.stamp
+
+# Downloads and AI agents (left, hidden when idle)
+sketchybar --add item dl left \
+  --set dl update_freq=2 updates=on drawing=off icon="󰇚" icon.color=$(getcolor cyan) label.max_chars=44 \
+    script="$PLUGIN_DIR/downloads.sh" click_script="open ~/Downloads" \
+  --add bracket dlbox dl --set dlbox "${bracket_defaults[@]}" \
+  --add item agents left \
+  --set agents update_freq=3 updates=on drawing=off icon="󰚩" icon.color=$(getcolor purple) \
+    script="$PLUGIN_DIR/agents.sh" \
+  --add bracket agentsbox agents --set agentsbox "${bracket_defaults[@]}"
+
+
+
+# Right side, added right to left
+sketchybar --add item clock right \
+  --set clock update_freq=10 icon.drawing=off label.padding_left=8 label.padding_right=8 \
+    script="$PLUGIN_DIR/clock.sh" click_script="open -a Calendar" \
+  --add item spacer.r right --set spacer.r width=6 background.drawing=off \
+  --add item battery right --set battery "${menu_defaults[@]}" update_freq=60 \
+    script="$PLUGIN_DIR/battery.sh" \
+    --subscribe battery power_source_change system_woke mouse.clicked mouse.exited.global \
+  --add item volume right --set volume "${menu_defaults[@]}" script="$PLUGIN_DIR/volume.sh" \
+    --subscribe volume volume_change system_woke mouse.clicked mouse.exited.global \
+  --add item wifi right --set wifi "${menu_defaults[@]}" update_freq=15 label.drawing=off \
+    script="$PLUGIN_DIR/wifi.sh" \
+    --subscribe wifi wifi_change system_woke mouse.clicked mouse.exited.global \
+  --add item net right --set net update_freq=2 icon="󰩠" icon.color=$(getcolor teal) \
+    script="$PLUGIN_DIR/net.sh" \
+  --add item ram right --set ram update_freq=5 icon="󰘚" icon.color=$(getcolor purple) \
+    script="$PLUGIN_DIR/ram.sh" click_script="open -a 'Activity Monitor'" \
+  --add item gpu right --set gpu update_freq=5 icon="󰢮" icon.color=$(getcolor orange) \
+    script="$PLUGIN_DIR/gpu.sh" click_script="open -a 'Activity Monitor'" \
+  --add item cpu right --set cpu update_freq=5 icon="󰍛" icon.color=$(getcolor red) \
+    script="$PLUGIN_DIR/cpu.sh" click_script="open -a 'Activity Monitor'"
+
+# Popups (filled by plugins when opened)
+for n in ip router link signal; do
+  case $n in ip) ic="󰩟";; router) ic="󰩞";; link) ic="󰩠";; signal) ic="󰩡";; esac
+  sketchybar --add item wifi.$n popup.wifi --set wifi.$n "${menu_item_defaults[@]}" icon="$ic" label="..."
+done
+sketchybar --set wifi.ip click_script='printf %s "$(ipconfig getifaddr en0)" | pbcopy; sketchybar --set wifi popup.drawing=off'
+for n in state time cycles health; do
+  case $n in state) ic="󱐋";; time) ic="󰥔";; cycles) ic="󰁪";; health) ic="󰋑";; esac
+  sketchybar --add item battery.$n popup.battery --set battery.$n "${menu_item_defaults[@]}" icon="$ic" label="..."
+done
+
+# Vorssaint launcher (its own icon lives in the auto-hidden macOS menu bar)
+sketchybar --add item vorssaint right \
+  --set vorssaint icon="" icon.color=$(getcolor yellow) label.drawing=off \
+    icon.padding_left=8 icon.padding_right=8 click_script="osascript -e 'tell application \"System Events\" to tell process \"Vorssaint\" to click menu bar item 1 of menu bar 2'"
+
+sketchybar --add item bell right \
+  --set bell "${menu_defaults[@]}" updates=on drawing=off icon="󰂜" icon.color=$(getcolor yellow) \
+    script="$PLUGIN_DIR/bell.sh" --subscribe bell mouse.clicked mouse.exited.global \
+  --add bracket bellbox bell --set bellbox "${bracket_defaults[@]}"
+for n in 1 2 3 4 5 6; do
+  sketchybar --add item bell.$n popup.bell --set bell.$n "${menu_item_defaults[@]}" drawing=off \
+    icon.width=44 icon.font="$FONT:Regular:11" label.max_chars=70
+done
+
+# Timer / stopwatch: click = presets (idle) or pause/resume (running), right click = stop
+sketchybar --add event timer_change
+sketchybar --add item timer right \
+  --set timer "${menu_defaults[@]}" updates=on update_freq=1 icon="󱎫" icon.color=$(getcolor grey) label.drawing=off \
+    script="$PLUGIN_DIR/timer.sh" \
+    --subscribe timer mouse.clicked mouse.exited.global timer_change \
+  --add bracket timerbox timer --set timerbox "${bracket_defaults[@]}"
+for p in "5 min:5m" "15 min:15m" "25 min focus:25m" "45 min:45m" "Stopwatch:sw"; do
+  id=$(echo "${p##*:}" | tr -d ' '); sketchybar --add item timer.$id popup.timer \
+    --set timer.$id "${menu_item_defaults[@]}" icon="󱎫" label="${p%%:*}" \
+      click_script="$CONFIG_DIR/bin/bar-timer ${p##*:}; sketchybar --set timer popup.drawing=off"
+done
+
+# Mic mute indicator: only visible while muted. Click to unmute.
+sketchybar --add item mic right \
+  --set mic updates=on update_freq=2 drawing=off icon="󰍭" icon.color=$(getcolor red) label.drawing=off \
+    icon.padding_left=8 icon.padding_right=8 script="$PLUGIN_DIR/mic.sh" \
+    --subscribe mic mouse.clicked volume_change \
+  --add bracket micbox mic --set micbox "${bracket_defaults[@]}"
+
+# Volume mixer popup: output slider, mic slider, mute toggle, sound settings
+sketchybar --add item vol.out.label popup.volume --set vol.out.label "${menu_item_defaults[@]}" icon="󰕾" label="Output" \
+  --add slider vol.out popup.volume 150 --set vol.out slider.width=150 slider.highlight_color=$(getcolor yellow) \
+    slider.background.height=6 slider.background.corner_radius=3 slider.background.color=$(getcolor grey) \
+    script="$PLUGIN_DIR/mixer.sh" updates=on --subscribe vol.out mouse.clicked \
+  --add item vol.in.label popup.volume --set vol.in.label "${menu_item_defaults[@]}" icon="󰍬" label="Mic" \
+  --add slider vol.in popup.volume 150 --set vol.in slider.width=150 slider.highlight_color=$(getcolor red) \
+    slider.background.height=6 slider.background.corner_radius=3 slider.background.color=$(getcolor grey) \
+    script="$PLUGIN_DIR/mixer.sh" updates=on --subscribe vol.in mouse.clicked \
+  --add item vol.mute popup.volume --set vol.mute "${menu_item_defaults[@]}" icon="󰖁" label="Mute / unmute output" \
+    click_script="osascript -e 'set volume output muted not (output muted of (get volume settings))'; sketchybar --trigger volume_change" \
+  --add item vol.settings popup.volume --set vol.settings "${menu_item_defaults[@]}" icon="󰒓" label="Sound settings" \
+    click_script="open 'x-apple.systempreferences:com.apple.Sound-Settings.extension'; sketchybar --set volume popup.drawing=off"
+
+sketchybar --add bracket status cpu gpu ram net wifi volume battery --set status "${bracket_defaults[@]}" \
+           --add bracket tools vorssaint --set tools "${bracket_defaults[@]}" \
+           --add bracket time clock --set time "${bracket_defaults[@]}"
+
+sketchybar --update
+
+pkill -f plugins/notif-watch 2>/dev/null
+pkill -x clipwatch 2>/dev/null
+nohup "$PLUGIN_DIR/clip-watch.sh" >/dev/null 2>&1 &
+nohup "$PLUGIN_DIR/notif-watch.sh" >/dev/null 2>&1 &
+
+# Push OmniWM changes to the bar, and keep workspace numbers contiguous (closing 3 turns 4 into 3).
+# Both run under supervise.sh because "omniwmctl watch" can crash and would otherwise stay dead.
+for n in bar compact; do [ -f /tmp/supervise-$n.pid ] && kill "$(cat /tmp/supervise-$n.pid)" 2>/dev/null; done
+pkill -x omniwmctl 2>/dev/null
+nohup "$PLUGIN_DIR/supervise.sh" bar omniwmctl watch active-workspace,windows-changed,focus --reconnect --exec sketchybar --trigger omniwm_change >/dev/null 2>&1 &
+nohup "$PLUGIN_DIR/supervise.sh" compact omniwmctl watch windows-changed --reconnect --exec "$PLUGIN_DIR/compact.sh" >/dev/null 2>&1 &

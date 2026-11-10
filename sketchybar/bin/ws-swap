@@ -1,0 +1,24 @@
+#!/bin/bash
+# ws-swap prev | next | A B   Swap the windows of two occupied workspaces, then follow them.
+# Holds the renumbering lock while moving so the compaction script doesn't interfere.
+OM=/opt/homebrew/bin/omniwmctl; JQ=/opt/homebrew/bin/jq
+Q() { $OM query "$@" --format json 2>/dev/null; }
+CUR=$(Q workspaces --current | $JQ -r '.result.payload.workspaces[0].number')
+case "$1" in
+  prev) A=$CUR; B=$((CUR - 1)) ;;
+  next) A=$CUR; B=$((CUR + 1)) ;;
+  *) A=$1; B=$2 ;;
+esac
+[ -n "$A" ] && [ -n "$B" ] && [ "$A" -ge 1 ] && [ "$B" -ge 1 ] && [ "$A" -le 9 ] && [ "$B" -le 9 ] && [ "$A" != "$B" ] || exit 0
+LOCK=/tmp/omniwm-compact.lock
+for i in 1 2 3 4 5 6 7 8 9 10; do mkdir "$LOCK" 2>/dev/null && break; sleep 0.3; done
+trap 'rmdir "$LOCK" 2>/dev/null' EXIT
+WIN=$(Q windows | $JQ -r '.result.payload.windows[] | select((.isScratchpad // false) | not) | "\(.workspace.number) \(.id)"')
+ids() { echo "$WIN" | awk -v w="$1" '$1==w {print $2}'; }
+IA=$(ids $A); IB=$(ids $B)
+[ -n "$IA" ] && [ -n "$IB" ] || exit 0          # both must be occupied
+USED=$(echo "$WIN" | awk '{print $1}' | sort -u | tr '\n' ' ')
+for T in 9 8 7 6 5 4 3 2 1; do case " $USED " in *" $T "*) ;; *) break ;; esac; done
+mv() { while read -r id; do [ -n "$id" ] && $OM window move-to-workspace "$id" "$2" >/dev/null; done <<< "$1"; }
+mv "$IA" $T; mv "$IB" $A; mv "$IA" $B
+sleep 0.2; $OM command switch-workspace $B >/dev/null

@@ -1,0 +1,11 @@
+#!/bin/bash
+# Toggle microphone mute (input volume 0 = muted). Remembers the last level.
+SAVED=/tmp/sketchybar-mic.saved
+V=$(osascript -e 'input volume of (get volume settings)')
+if [ "$V" = "0" ]; then
+  osascript -e "set volume input volume $(cat "$SAVED" 2>/dev/null || echo 75)"
+else
+  echo "$V" > "$SAVED"
+  osascript -e 'set volume input volume 0'
+fi
+/opt/homebrew/bin/sketchybar --trigger volume_change 2>/dev/null

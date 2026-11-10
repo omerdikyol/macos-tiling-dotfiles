@@ -1,0 +1,12 @@
+#!/bin/bash
+# wallpaper street | pines | next | /path/to/image.jpg   Sets the desktop picture on every desktop.
+D=~/Pictures/Wallpapers
+case "$1" in
+  street) F=$D/street-night.jpg ;;
+  pines)  F=$D/silver-pines.jpg ;;
+  next|"") cur=$(osascript -e 'tell app "System Events" to get picture of desktop 1' 2>/dev/null)
+           case "$cur" in *street-night*) F=$D/silver-pines.jpg ;; *) F=$D/street-night.jpg ;; esac ;;
+  *) F=$1 ;;
+esac
+[ -f "$F" ] || { echo "no such file: $F"; exit 1; }
+osascript -e "tell application \"System Events\" to tell every desktop to set picture to POSIX file \"$F\"" && echo "wallpaper: $F"

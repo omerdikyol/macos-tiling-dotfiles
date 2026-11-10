@@ -1,0 +1,42 @@
+# Ghostty: Tokyo Night, matched to the SketchyBar and OmniWM colors.
+
+# Colors
+theme = tokyonight
+cursor-color = #7aa2f7
+cursor-text = #1a1b26
+selection-background = #33467c
+selection-foreground = #c0caf5
+minimum-contrast = 1.1
+split-divider-color = #3b4261
+unfocused-split-opacity = 0.72
+
+# Font
+font-family = JetBrainsMono Nerd Font Mono
+font-size = 14
+font-thicken = true
+adjust-cell-height = 12%
+# ligatures (calt) stay on; switch off with: font-feature = -calt
+
+# Window
+background-opacity = 0.88
+background-blur = 28
+window-padding-x = 18
+window-padding-y = 14
+window-padding-balance = true
+window-padding-color = background
+macos-titlebar-style = hidden
+macos-window-shadow = false
+resize-overlay = never
+confirm-close-surface = false
+window-inherit-working-directory = true
+
+# Cursor
+cursor-style = bar
+cursor-style-blink = true
+cursor-opacity = 0.9
+mouse-hide-while-typing = true
+
+# Typing and clipboard (Option stays free for the Turkish layout)
+macos-option-as-alt = false
+copy-on-select = clipboard
+keybind = shift+enter=text:\n
