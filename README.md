@@ -2,7 +2,9 @@
 
 An Omarchy/Hyprland-style desktop on a MacBook: dwindle tiling, a keyboard-first workflow on Caps Lock, a transparent Tokyo Night status bar, and a matching terminal.
 
-![Desktop: two tiled Ghostty windows under the SketchyBar status bar](screenshots/desktop.png)
+![Two tiled Ghostty windows under the SketchyBar status bar](screenshots/terminal.png)
+
+![The bare desktop: wallpaper with the transparent status bar](screenshots/wallpaper.png)
 
 Built and tested on an Apple Silicon MacBook Pro running macOS 26 (Tahoe), with a Turkish keyboard layout. Nothing here needs SIP turned off.
 
