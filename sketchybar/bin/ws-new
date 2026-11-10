@@ -1,0 +1,16 @@
+#!/bin/bash
+# ws-new   Move the focused window to a brand-new workspace (the next free number) and switch to it.
+OM=/opt/homebrew/bin/omniwmctl; JQ=/opt/homebrew/bin/jq
+Q() { $OM query "$@" --format json 2>/dev/null; }
+WIN=$(Q windows | $JQ -r '.result.payload.windows[] | select((.isScratchpad // false) | not) | .workspace.number')
+CUR=$(Q focused-window | $JQ -r '.result.payload.window.workspace.number // empty')
+[ -n "$CUR" ] || exit 0
+# Nothing to do if it is the only window here: the new workspace would just replace this one.
+[ "$(echo "$WIN" | grep -c "^$CUR$")" -gt 1 ] || exit 0
+MAX=$(echo "$WIN" | sort -n | tail -1)
+NEW=$((MAX + 1))
+[ "$NEW" -le 9 ] || exit 0
+[ "$1" = "--dry" ] && { echo "would move to workspace $NEW"; exit 0; }
+$OM command move-to-workspace "$NEW" >/dev/null
+sleep 0.3
+$OM command switch-workspace "$NEW" >/dev/null

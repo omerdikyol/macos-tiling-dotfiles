@@ -4,7 +4,7 @@ PADDINGS=6
 FONT="JetBrainsMono Nerd Font"
 
 bar=(
-  color=$TRANSPARENT position=top height=32 padding_left=6 padding_right=6
+  color=$TRANSPARENT position=top height=32 padding_left=6 padding_right=30
   corner_radius=0 blur_radius=0 notch_width=200 sticky=on topmost=off
 )
 item_defaults=(

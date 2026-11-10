@@ -14,7 +14,7 @@ Built and tested on an Apple Silicon MacBook Pro running macOS 26 (Tahoe), with 
 |---|---|---|
 | `omniwm/` | [OmniWM](https://omniwm.app) | Window manager. Dwindle (Hyprland-style) tiling, nine workspaces, focus border with a blue-to-purple gradient. Its own bar is off. |
 | `sketchybar/` | [SketchyBar](https://github.com/FelixKratz/SketchyBar) | The status bar, see below. |
-| `karabiner/` | [Karabiner-Elements](https://karabiner-elements.pqrs.org) | Caps Lock becomes Hyper (hold) or Escape (tap), plus app launchers and a few shell shortcuts. |
+| `karabiner/` | [Karabiner-Elements](https://karabiner-elements.pqrs.org) | Caps Lock becomes Hyper (hold; a tap alone does nothing, so it cannot interrupt a terminal program), plus app launchers and a few shell shortcuts. |
 | `ghostty/` | [Ghostty](https://ghostty.org) | Tokyo Night, translucent, JetBrainsMono Nerd Font. |
 | `starship/` | [Starship](https://starship.rs) | The `tokyo-night` preset. |
 | `bin/wallpaper` | | `wallpaper street`, `wallpaper next` or any image path. Wallpapers are not included. |
@@ -46,6 +46,7 @@ Workspaces close up automatically: close the last window on workspace 3 and work
 | Caps + Return, B, E | Ghostty, Helium (browser), Finder |
 | Caps + M | Toggle microphone mute |
 | Caps + , and . | Swap the workspace with the previous / next one |
+| Caps + N | Move the focused window to a new workspace and follow it |
 
 The app launchers are examples: edit the "Hyper app launchers" rule in `karabiner/karabiner.json` to open your own apps.
 
@@ -73,6 +74,7 @@ Things macOS makes you do by hand:
 - **Hidden SketchyBar items don't update** unless they have `updates=on`. Every item here that hides itself sets it.
 - **No real Caps Lock.** This setup gives that key to the shortcuts. Karabiner could not reliably toggle it back on this machine, so there is no Caps Lock mode.
 - **Paths.** `karabiner/karabiner.json` uses `__HOME__` placeholders, which the install script replaces. `ws-swap` and `mic-toggle` assume Homebrew at `/opt/homebrew`.
+- **Top-right indicator.** macOS draws its own screen/audio capture dot at the right end of the menu-bar area, over the bar. The bar keeps 30 pt of right padding (`padding_right` in `sketchybar/globalstyles.sh`) so the clock stays readable.
 - **Notification reader limits.** It only sees banners that actually appeared, so notifications silenced by a Focus mode never reach the bar.
 - The `omniwm/settings.toml` here includes the author's workspace and rule IDs. They are not secrets, but OmniWM regenerates its own on first run if you start fresh.
 

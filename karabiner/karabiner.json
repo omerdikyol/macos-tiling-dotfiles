@@ -37,7 +37,7 @@
             ]
           },
           {
-            "description": "Caps Lock to Hyper (cmd+alt+ctrl), Escape if tapped alone",
+            "description": "Caps Lock to Hyper (cmd+alt+ctrl); a tap alone does nothing",
             "manipulators": [
               {
                 "type": "basic",
@@ -57,10 +57,28 @@
                       "left_option"
                     ]
                   }
-                ],
-                "to_if_alone": [
+                ]
+              }
+            ]
+          },
+          {
+            "description": "Hyper+Space: toggle the fener launcher",
+            "manipulators": [
+              {
+                "type": "basic",
+                "from": {
+                  "key_code": "spacebar",
+                  "modifiers": {
+                    "mandatory": [
+                      "left_control",
+                      "left_command",
+                      "left_option"
+                    ]
+                  }
+                },
+                "to": [
                   {
-                    "key_code": "escape"
+                    "shell_command": "$HOME/.local/bin/fener toggle"
                   }
                 ]
               }
@@ -378,6 +396,29 @@
                 "to": [
                   {
                     "shell_command": "__HOME__/.config/sketchybar/bin/ws-swap next"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "description": "Hyper+N: move window to a new workspace and follow it",
+            "manipulators": [
+              {
+                "type": "basic",
+                "from": {
+                  "key_code": "n",
+                  "modifiers": {
+                    "mandatory": [
+                      "left_control",
+                      "left_command",
+                      "left_option"
+                    ]
+                  }
+                },
+                "to": [
+                  {
+                    "shell_command": "__HOME__/.config/sketchybar/bin/ws-new"
                   }
                 ]
               }
